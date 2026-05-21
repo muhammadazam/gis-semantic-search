@@ -245,13 +245,28 @@ The Qdrant collection may be empty. Check the `search` container logs:
 ```bash
 docker compose logs search
 ```
-You should see `"Seeded 12 places into Qdrant."` on first run.
+You should see `"Seeded 12 places into Qdrant."` on first run. If seeding failed, bring everything down and retry:
+```bash
+docker compose down -v
+docker compose up --build -d
+```
 
 **Browser shows a blank map**  
 Check that all containers are running:
 ```bash
 docker compose ps
 ```
+All three services (`caddy`, `search`, `qdrant`) should show `Up`. If any are in `Exit` state, check their logs:
+```bash
+docker compose logs <service-name>
+```
+
+**First startup is stuck / taking very long**  
+The embedding model (`all-MiniLM-L6-v2`, ~90 MB) is downloaded on the first run. This can take a few minutes depending on your internet connection. Watch progress with:
+```bash
+docker compose logs -f search
+```
+Wait until you see `"Seeded 12 places into Qdrant."` before searching.
 
 **"Proceed to localhost" warning on HTTPS**  
 This is expected. Caddy generates a self-signed certificate for local development. Click **Advanced → Proceed to localhost**.
@@ -262,3 +277,65 @@ Another service is using port 443. Stop it, or change the port in `docker-compos
 ports:
   - "8443:443"   # access via https://localhost:8443
 ```
+
+**`docker compose` command not found**  
+Older versions of Docker use `docker-compose` (with a hyphen) instead of `docker compose`. Either update Docker Desktop, or replace `docker compose` with `docker-compose` in all commands.
+
+**Search results don't seem relevant**  
+The quality of results depends on the `description` field in `places.geojson`. Short or vague descriptions produce poor matches. Try writing longer, more descriptive sentences for each place — see the [tips above](#3-tips-for-writing-good-descriptions).
+
+**Tutorial scripts fail with `ModuleNotFoundError`**  
+Make sure your virtual environment is activated before running any tutorial script:
+```bash
+# Windows
+venv\Scripts\activate
+
+# Mac / Linux
+source venv/bin/activate
+```
+Then install the dependencies:
+```bash
+pip install geopandas qdrant-client sentence-transformers
+```
+
+---
+
+## Contributing
+
+Contributions are welcome — whether that's fixing a bug, improving the tutorial scripts, or adding new places to the example dataset.
+
+### Reporting a bug or requesting a feature
+
+1. Check the [existing issues](https://github.com/muhammadazam/gis-semantic-search/issues) to see if it has already been reported.
+2. If not, open a new issue and include:
+   - What you expected to happen
+   - What actually happened
+   - Your operating system and Docker version (`docker --version`)
+   - Any relevant output from `docker compose logs`
+
+### Submitting a pull request
+
+1. Fork the repository and create a new branch from `master`:
+   ```bash
+   git checkout -b your-feature-name
+   ```
+2. Make your changes and test them locally (`docker compose up --build -d`).
+3. Commit with a clear message describing what changed and why.
+4. Open a pull request against the `master` branch with a short description of your changes.
+
+### What kinds of contributions are most useful
+
+- Bug fixes and clearer error messages
+- Additional tutorial steps (e.g. step 6: visualising similarity scores)
+- More example places in `places.geojson`
+- Improvements to the map UI
+- Documentation fixes and clearer explanations
+
+---
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0**.  
+See the [LICENSE](LICENSE) file for the full terms.
+
+In short: you are free to use, study, modify, and distribute this project, but any modified version you distribute must also be released under the GPL v3.
