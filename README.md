@@ -4,6 +4,12 @@ A hands-on tutorial project that combines **GIS data**, **vector embeddings**, a
 
 > **Example:** Searching *"quiet outdoor space to relax"* surfaces parks and gardens, even though none of those words appear in their descriptions.
 
+![Map with search results](docs/map-search.png)
+*Semantic search in action — dimmed markers are low-relevance, highlighted markers are the top matches*
+
+![Map overview](docs/map-screenshot.png)
+*All 12 places loaded on startup, coloured by category*
+
 ---
 
 ## What This Project Does
