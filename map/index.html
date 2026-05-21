@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIS Places — London</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #1a1a2e; color: #eee; display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── header ── */
+    header {
+      padding: 10px 16px;
+      background: #16213e;
+      border-bottom: 1px solid #0f3460;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 1rem; font-weight: 600; white-space: nowrap; }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      max-width: 600px;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 7px 12px;
+      border-radius: 6px;
+      border: 1px solid #0f3460;
+      background: #1a1a2e;
+      color: #eee;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    .search-bar input:focus { border-color: #4fc3f7; }
+    .search-bar input::placeholder { color: #666; }
+
+    .search-bar button {
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: none;
+      background: #0f3460;
+      color: #90caf9;
+      font-size: 0.88rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .search-bar button:hover { background: #1565c0; }
+    .search-bar button:disabled { opacity: 0.5; cursor: default; }
+
+    /* ── map ── */
+    #map { flex: 1; }
+
+    /* ── results panel ── */
+    #results-panel {
+      position: absolute;
+      top: 58px;
+      left: 16px;
+      width: 280px;
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      z-index: 1000;
+      display: none;
+      overflow: hidden;
+    }
+    #results-panel.visible { display: block; }
+
+    .results-header {
+      padding: 10px 14px;
+      background: #0f3460;
+      font-size: 0.78rem;
+      color: #90caf9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .results-header button {
+      background: none;
+      border: none;
+      color: #90caf9;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .result-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid #0f3460;
+      cursor: pointer;
+    }
+    .result-item:last-child { border-bottom: none; }
+    .result-item:hover { background: #0f3460; }
+
+    .result-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+    .result-meta { display: flex; align-items: center; gap: 8px; }
+    .result-category {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: #1a1a2e;
+      color: #90caf9;
+    }
+    .score-bar-wrap { flex: 1; height: 4px; background: #1a1a2e; border-radius: 2px; }
+    .score-bar { height: 100%; border-radius: 2px; background: #4fc3f7; }
+    .score-label { font-size: 0.7rem; color: #888; }
+
+    /* ── legend ── */
+    .legend {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      line-height: 1.9;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; }
+
+    /* ── popup ── */
+    .leaflet-popup-content-wrapper { background: #16213e; border: 1px solid #0f3460; color: #eee; border-radius: 8px; }
+    .leaflet-popup-tip { background: #16213e; }
+    .popup-name     { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .popup-category { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 20px; margin-bottom: 8px; background: #0f3460; color: #90caf9; }
+    .popup-desc     { font-size: 0.82rem; line-height: 1.5; color: #ccc; }
+    .popup-coords   { font-size: 0.72rem; color: #888; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>GIS Places — London</h1>
+  <div class="search-bar">
+    <input id="query" type="text" placeholder='Try "quiet park", "live music", "history for kids"…' />
+    <button id="search-btn" onclick="runSearch()">Search</button>
+  </div>
+</header>
+
+<div id="map"></div>
+
+<!-- floating results panel -->
+<div id="results-panel">
+  <div class="results-header">
+    <span id="results-label">Results</span>
+    <button onclick="clearSearch()" title="Clear">✕</button>
+  </div>
+  <div id="results-list"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const COLOURS = {
+    park: "#4caf50", hospital: "#f44336", museum: "#2196f3",
+    gallery: "#9c27b0", market: "#ff9800", transport: "#9e9e9e",
+    landmark: "#ffc107", religious: "#00bcd4", theatre: "#e91e63",
+    education: "#3f51b5", arts: "#673ab7",
+  };
+
+  const places = [
+    { name: "Hyde Park",             category: "park",      lat: 51.5074, lon: -0.1657, desc: "A vast royal park with open meadows, a boating lake, and tree-lined paths. Perfect for jogging, picnics, and quiet relaxation." },
+    { name: "St Thomas Hospital",    category: "hospital",  lat: 51.4987, lon: -0.1188, desc: "A major NHS teaching hospital on the South Bank offering emergency care, specialist surgery, and outpatient services." },
+    { name: "British Museum",        category: "museum",    lat: 51.5194, lon: -0.1270, desc: "World-famous museum housing ancient Egyptian mummies, Greek sculptures, and artefacts spanning two million years of history." },
+    { name: "Borough Market",        category: "market",    lat: 51.5055, lon: -0.0908, desc: "One of London's oldest and largest food markets. Vendors sell artisan cheese, fresh bread, street food, and seasonal produce." },
+    { name: "Tate Modern",           category: "gallery",   lat: 51.5076, lon: -0.0993, desc: "A leading contemporary art gallery inside a converted power station. Features works by Picasso, Warhol, and Rothko." },
+    { name: "Waterloo Station",      category: "transport", lat: 51.5031, lon: -0.1132, desc: "London's busiest railway terminal with national rail connections, the Underground, and direct Eurostar access." },
+    { name: "Tower Bridge",          category: "landmark",  lat: 51.5022, lon: -0.0763, desc: "An iconic Victorian bascule bridge over the River Thames with glass-floored walkways and historic engine rooms." },
+    { name: "Southwark Cathedral",   category: "religious", lat: 51.5079, lon: -0.0904, desc: "A medieval Gothic cathedral with a 1,000-year history, a quiet garden, and regular classical music concerts." },
+    { name: "Shakespeare's Globe",   category: "theatre",   lat: 51.5081, lon: -0.0973, desc: "A faithful reconstruction of the Elizabethan open-air theatre where Shakespeare performed, in the original groundling tradition." },
+    { name: "King's College London", category: "education", lat: 51.5115, lon: -0.1157, desc: "A leading research university on the Strand with faculties in medicine, law, science, and humanities." },
+    { name: "St James's Park",       category: "park",      lat: 51.5024, lon: -0.1337, desc: "The oldest of the Royal Parks, with stunning views of Buckingham Palace. Famous for its pelicans and flower beds." },
+    { name: "Barbican Centre",       category: "arts",      lat: 51.5142, lon: -0.0856, desc: "Europe's largest multi-arts venue with a concert hall, cinemas, theatres, and gallery. Home to the London Symphony Orchestra." },
+  ];
+
+  // ── map setup ─────────────────────────────────────────────────────────────
+  const map = L.map("map").setView([51.506, -0.105], 14);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  // ── markers ───────────────────────────────────────────────────────────────
+  const markersByName = {};
+
+  places.forEach(p => {
+    const colour = COLOURS[p.category] || "#fff";
+    const marker = L.circleMarker([p.lat, p.lon], {
+      radius: 10,
+      fillColor: colour,
+      color: "#fff",
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.85,
+    }).addTo(map);
+
+    marker.bindPopup(`
+      <div class="popup-name">${p.name}</div>
+      <span class="popup-category">${p.category}</span>
+      <div class="popup-desc">${p.desc}</div>
+      <div class="popup-coords">lat ${p.lat.toFixed(4)}, lon ${p.lon.toFixed(4)}</div>
+    `, { maxWidth: 260 });
+
+    marker._placeData = p;
+    marker._defaultColour = colour;
+    markersByName[p.name] = marker;
+  });
+
+  // ── legend ────────────────────────────────────────────────────────────────
+  const legend = L.control({ position: "bottomright" });
+  legend.onAdd = () => {
+    const div = L.DomUtil.create("div", "legend");
+    const cats = [...new Set(places.map(p => p.category))];
+    div.innerHTML = cats.map(c =>
+      `<div class="legend-item"><div class="dot" style="background:${COLOURS[c]||'#fff'}"></div>${c}</div>`
+    ).join("");
+    return div;
+  };
+  legend.addTo(map);
+
+  // ── search ────────────────────────────────────────────────────────────────
+  function dimAll() {
+    Object.values(markersByName).forEach(m => m.setStyle({ fillOpacity: 0.15, opacity: 0.2 }));
+  }
+
+  function resetAll() {
+    Object.values(markersByName).forEach(m => m.setStyle({ fillOpacity: 0.85, opacity: 1 }));
+  }
+
+  function highlightMarker(name) {
+    const m = markersByName[name];
+    if (m) m.setStyle({ fillOpacity: 1, opacity: 1, weight: 3 });
+  }
+
+  async function runSearch() {
+    const query = document.getElementById("query").value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById("search-btn");
+    btn.disabled = true;
+    btn.textContent = "Searching…";
+
+    try {
+      const res = await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, top_k: 5 }),
+      });
+
+      if (!res.ok) throw new Error("API error");
+      const data = await res.json();
+
+      showResults(query, data.results);
+    } catch (err) {
+      alert("Search failed — is the API container running?");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Search";
+    }
+  }
+
+  function showResults(query, results) {
+    dimAll();
+    results.forEach(r => highlightMarker(r.name));
+
+    // zoom to fit matched markers
+    const matched = results.map(r => markersByName[r.name]).filter(Boolean);
+    if (matched.length) {
+      const group = L.featureGroup(matched);
+      map.fitBounds(group.getBounds().pad(0.3));
+    }
+
+    // render results list
+    document.getElementById("results-label").textContent =
+      `"${query}" — ${results.length} match${results.length !== 1 ? "es" : ""}`;
+
+    document.getElementById("results-list").innerHTML = results.map(r => `
+      <div class="result-item" onclick="zoomTo('${r.name}')">
+        <div class="result-name">${r.name}</div>
+        <div class="result-meta">
+          <span class="result-category">${r.category}</span>
+          <div class="score-bar-wrap">
+            <div class="score-bar" style="width:${Math.round(r.score * 100)}%"></div>
+          </div>
+          <span class="score-label">${r.score.toFixed(2)}</span>
+        </div>
+      </div>
+    `).join("");
+
+    document.getElementById("results-panel").classList.add("visible");
+  }
+
+  function zoomTo(name) {
+    const m = markersByName[name];
+    if (m) {
+      map.setView(m.getLatLng(), 16);
+      m.openPopup();
+    }
+  }
+
+  function clearSearch() {
+    resetAll();
+    document.getElementById("results-panel").classList.remove("visible");
+    document.getElementById("results-list").innerHTML = "";
+    document.getElementById("query").value = "";
+  }
+
+  // allow pressing Enter to search
+  document.getElementById("query").addEventListener("keydown", e => {
+    if (e.key === "Enter") runSearch();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+localhost {
+    tls internal
+
+    handle /api/* {
+        reverse_proxy search:8000
+    }
+
+    handle {
+        root * /usr/share/caddy
+        file_server
+    }
+}

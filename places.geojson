@@ -1,0 +1,113 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.1657, 51.5074] },
+      "properties": {
+        "name": "Hyde Park",
+        "category": "park",
+        "description": "A vast royal park with open meadows, a boating lake, and tree-lined paths. Perfect for jogging, picnics, and quiet relaxation away from the city noise."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.1188, 51.4987] },
+      "properties": {
+        "name": "St Thomas Hospital",
+        "category": "hospital",
+        "description": "A major NHS teaching hospital on the South Bank offering emergency care, specialist surgery, and outpatient services for the local community."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.1270, 51.5194] },
+      "properties": {
+        "name": "British Museum",
+        "category": "museum",
+        "description": "World-famous museum housing ancient Egyptian mummies, Greek sculptures, and artefacts from across human history spanning two million years."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.0908, 51.5055] },
+      "properties": {
+        "name": "Borough Market",
+        "category": "market",
+        "description": "One of London's oldest and largest food markets. Vendors sell artisan cheese, fresh bread, street food, and seasonal produce from around the world."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.0993, 51.5076] },
+      "properties": {
+        "name": "Tate Modern",
+        "category": "gallery",
+        "description": "A leading contemporary art gallery inside a converted power station. Features modern and avant-garde works by Picasso, Warhol, and Rothko with free entry."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.1132, 51.5031] },
+      "properties": {
+        "name": "Waterloo Station",
+        "category": "transport",
+        "description": "London's busiest railway terminal with national rail connections, the London Underground, and direct Eurostar access to Paris and Brussels."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.0763, 51.5022] },
+      "properties": {
+        "name": "Tower Bridge",
+        "category": "landmark",
+        "description": "An iconic Victorian bascule bridge over the River Thames. Visitors can walk across the glass-floored high-level walkways and visit the engine rooms."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.0904, 51.5079] },
+      "properties": {
+        "name": "Southwark Cathedral",
+        "category": "religious",
+        "description": "A medieval Gothic cathedral with a history dating back 1,000 years. Offers daily services, a quiet garden, and hosts regular classical music concerts."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.0973, 51.5081] },
+      "properties": {
+        "name": "Shakespeare's Globe Theatre",
+        "category": "theatre",
+        "description": "A faithful reconstruction of the original Elizabethan open-air theatre where Shakespeare performed. Hosts outdoor plays in the original groundling tradition."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.1157, 51.5115] },
+      "properties": {
+        "name": "King's College London",
+        "category": "education",
+        "description": "A leading research university on the Strand with faculties in medicine, law, science, and humanities. Home to over 30,000 students from 150 countries."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.1337, 51.5024] },
+      "properties": {
+        "name": "St James's Park",
+        "category": "park",
+        "description": "The oldest of the Royal Parks, offering stunning views of Buckingham Palace across its lake. Famous for its pelicans and beautiful flower beds."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.0856, 51.5142] },
+      "properties": {
+        "name": "Barbican Centre",
+        "category": "arts",
+        "description": "Europe's largest multi-arts venue with a concert hall, cinemas, theatres, art gallery, and restaurants. Home to the London Symphony Orchestra."
+      }
+    }
+  ]
+}
